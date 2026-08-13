@@ -1,0 +1,23 @@
+{
+  "name": "@seal/cli",
+  "version": "0.1.0",
+  "description": "seal CLI - self-healing technical documentation as a local git hook",
+  "type": "module",
+  "bin": {
+    "seal": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@seal/core": "*"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

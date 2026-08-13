@@ -1,0 +1,25 @@
+{
+  "name": "seal",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Self-Healing Technical Documentation",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run build -w @seal/core && npm run build -w @seal/cli && npm run build -w @seal/action",
+    "typecheck": "npm run build -w @seal/core && npm run typecheck -w @seal/cli && npm run typecheck -w @seal/action",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^20.19.43",
+    "eslint": "^10.8.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.67.0"
+  }
+}

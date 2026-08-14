@@ -12,9 +12,22 @@ const DEFAULT_EMBEDDING_MODEL = 'gemini-embedding-2';
 
 const MAX_RETRIES = 4;
 const INITIAL_BACKOFF_MS = 1000;
+const RETRYABLE_ERROR_CODES = new Set(['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN']);
 
 function isRetryable(error: unknown): boolean {
-  return error instanceof ApiError && (error.status === 429 || error.status === 503);
+  if (error instanceof ApiError) {
+    return error.status === 429 || error.status === 503;
+  }
+  // The SDK only wraps HTTP-level failures into ApiError - a raw fetch()
+  // failure (DNS, connection reset, timeout) surfaces as a plain network
+  // error instead, and is just as worth retrying in a CI environment.
+  if (error instanceof Error) {
+    if (error.name === 'AbortError') return true;
+    if (error instanceof TypeError && error.cause) return true;
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code && RETRYABLE_ERROR_CODES.has(code)) return true;
+  }
+  return false;
 }
 
 async function withRetry<T>(fn: () => Promise<T>): Promise<T> {

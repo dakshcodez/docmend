@@ -36,11 +36,18 @@ export async function buildEmbeddingLinks(
   }
   await index.createIndex({ version: 1 });
 
+  const seenChunkIds = new Set<string>();
   for (const chunk of chunks) {
     const vector = await llm.embed(chunkEmbeddingText(chunk));
     // upsert, not insert: two chunks can legitimately share an id (e.g.
     // same-named locally-scoped helpers in different function bodies) -
     // that's an inherent limit of a name-based id scheme, not a fatal error.
+    // Still surfaced as a warning, since it means one of the two silently
+    // becomes unlinkable rather than crashing loudly like insertItem did.
+    if (seenChunkIds.has(chunk.id)) {
+      console.warn(`seal: duplicate chunk id "${chunk.id}" - only the last one is linkable in the embedding index.`);
+    }
+    seenChunkIds.add(chunk.id);
     await index.upsertItem({ id: chunk.id, vector });
   }
 

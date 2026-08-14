@@ -1,13 +1,10 @@
 import type { Node } from 'web-tree-sitter';
 import type { GrammarId } from '../parsing/index.js';
 import { createParser, resolveGrammar } from '../parsing/index.js';
+import { isTestFile } from '../shared/is-test-file.js';
 import type { ChunkDiff } from './types.js';
 
-const TEST_FILE_PATTERN = /(^|\/)(__tests__|tests?)\/|\.(test|spec)\.[^/]+$/;
-
-export function isTestFile(filePath: string): boolean {
-  return TEST_FILE_PATTERN.test(filePath);
-}
+export { isTestFile };
 
 function collectCommentRanges(node: Node, ranges: [number, number][]): void {
   if (node.type === 'comment') {

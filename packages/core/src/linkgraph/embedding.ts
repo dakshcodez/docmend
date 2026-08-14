@@ -38,7 +38,10 @@ export async function buildEmbeddingLinks(
 
   for (const chunk of chunks) {
     const vector = await llm.embed(chunkEmbeddingText(chunk));
-    await index.insertItem({ id: chunk.id, vector });
+    // upsert, not insert: two chunks can legitimately share an id (e.g.
+    // same-named locally-scoped helpers in different function bodies) -
+    // that's an inherent limit of a name-based id scheme, not a fatal error.
+    await index.upsertItem({ id: chunk.id, vector });
   }
 
   const links: Link[] = [];

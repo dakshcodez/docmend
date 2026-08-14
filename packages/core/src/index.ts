@@ -10,6 +10,7 @@ export type { DocFile, DocSection } from './docs/index.js';
 export {
   applySectionCorrection,
   extractCodeReferences,
+  isChangelogFile,
   parseDocs,
   parseMarkdownSections,
   walkDocFiles,

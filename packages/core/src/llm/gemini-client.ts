@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { ApiError, GoogleGenAI } from '@google/genai';
 import type { CompleteOptions, LLMClient } from './types.js';
 
 export interface GeminiClientOptions {
@@ -9,6 +9,25 @@ export interface GeminiClientOptions {
 
 const DEFAULT_GENERATION_MODEL = 'gemini-3.7-flash';
 const DEFAULT_EMBEDDING_MODEL = 'gemini-embedding-2';
+
+const MAX_RETRIES = 4;
+const INITIAL_BACKOFF_MS = 1000;
+
+function isRetryable(error: unknown): boolean {
+  return error instanceof ApiError && (error.status === 429 || error.status === 503);
+}
+
+async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (!isRetryable(error) || attempt >= MAX_RETRIES) throw error;
+      const delayMs = INITIAL_BACKOFF_MS * 2 ** attempt;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
 
 export class GeminiClient implements LLMClient {
   private readonly client: GoogleGenAI;
@@ -29,15 +48,17 @@ export class GeminiClient implements LLMClient {
   }
 
   async complete(prompt: string, options: CompleteOptions = {}): Promise<string> {
-    const response = await this.client.models.generateContent({
-      model: this.generationModel,
-      contents: prompt,
-      config: {
-        systemInstruction: options.systemInstruction,
-        temperature: options.temperature,
-        maxOutputTokens: options.maxOutputTokens,
-      },
-    });
+    const response = await withRetry(() =>
+      this.client.models.generateContent({
+        model: this.generationModel,
+        contents: prompt,
+        config: {
+          systemInstruction: options.systemInstruction,
+          temperature: options.temperature,
+          maxOutputTokens: options.maxOutputTokens,
+        },
+      }),
+    );
 
     const text = response.text;
     if (text === undefined) {
@@ -47,10 +68,12 @@ export class GeminiClient implements LLMClient {
   }
 
   async embed(text: string): Promise<number[]> {
-    const response = await this.client.models.embedContent({
-      model: this.embeddingModel,
-      contents: text,
-    });
+    const response = await withRetry(() =>
+      this.client.models.embedContent({
+        model: this.embeddingModel,
+        contents: text,
+      }),
+    );
 
     const values = response.embeddings?.[0]?.values;
     if (!values) {

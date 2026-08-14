@@ -1,6 +1,7 @@
 import type { StalenessVerdict, Suspect } from '../changes/index.js';
 import type { LLMClient } from '../llm/index.js';
 import { compositeKey } from '../shared/composite-key.js';
+import type { GenerateCorrectionOptions } from './generate.js';
 import { generateCorrection } from './generate.js';
 import type { RepairResult } from './types.js';
 import { validateCorrection } from './validate.js';
@@ -9,6 +10,7 @@ export async function repairSection(
   suspect: Suspect,
   verdict: StalenessVerdict,
   llm: LLMClient,
+  options: GenerateCorrectionOptions = {},
 ): Promise<RepairResult> {
   const sectionId = suspect.section.id;
   const chunkId = suspect.chunkDiff.chunkId;
@@ -16,7 +18,7 @@ export async function repairSection(
   // Validation failure is handled separately from generation failure so a
   // successfully-generated correction is never discarded just because the
   // follow-up validation call failed.
-  const correction = await generateCorrection(suspect, verdict, llm);
+  const correction = await generateCorrection(suspect, verdict, llm, options);
 
   try {
     const validation = await validateCorrection(correction, suspect, llm);
@@ -36,6 +38,7 @@ export async function repairStaleDocs(
   suspects: Suspect[],
   verdicts: StalenessVerdict[],
   llm: LLMClient,
+  options: GenerateCorrectionOptions = {},
 ): Promise<RepairResult[]> {
   const verdictsByKey = new Map(
     verdicts.map((verdict) => [compositeKey(verdict.chunkId, verdict.sectionId), verdict]),
@@ -48,7 +51,7 @@ export async function repairStaleDocs(
     if (!verdict?.stale) continue;
 
     try {
-      results.push(await repairSection(suspect, verdict, llm));
+      results.push(await repairSection(suspect, verdict, llm, options));
     } catch (error) {
       results.push({
         sectionId: suspect.section.id,

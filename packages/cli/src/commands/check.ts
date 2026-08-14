@@ -1,22 +1,18 @@
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { LinkGraph, LLMClient } from '@seal/core';
 import {
   GeminiClient,
-  applySectionCorrection,
+  applyCorrectionToRepo,
   detectChanges,
   getDiffBetweenRefs,
   getStagedDiff,
-  hasUnstagedChanges,
   isIgnored,
   loadIgnorePatterns,
   loadLinkGraph,
-  parseMarkdownSections,
   readFileAtRef,
   readStagedFile,
   repairStaleDocs,
   resolveFileChanges,
-  stageFile,
 } from '@seal/core';
 
 export interface CheckOptions {
@@ -25,8 +21,6 @@ export interface CheckOptions {
   strict: boolean;
   llm?: LLMClient;
 }
-
-type AutoFixOutcome = 'applied' | 'skipped-not-found' | 'skipped-partial-stage';
 
 const LINK_GRAPH_PATH = ['.seal', 'link-graph.json'];
 
@@ -40,35 +34,6 @@ async function loadGraph(cwd: string): Promise<LinkGraph | null> {
   } catch {
     return null;
   }
-}
-
-async function applyAutoFix(
-  cwd: string,
-  graph: LinkGraph,
-  sectionId: string,
-  correctedContent: string,
-): Promise<AutoFixOutcome> {
-  const linkedSection = graph.sections.find((section) => section.id === sectionId);
-  if (!linkedSection) return 'skipped-not-found';
-
-  // Writing the working-tree file and then `git add`-ing it stages the file's
-  // *entire* current content. If the file already had unstaged edits the
-  // developer deliberately hadn't staged, that would silently pull them into
-  // the commit too - so only auto-fix a file that's currently clean.
-  if (await hasUnstagedChanges(cwd, linkedSection.filePath)) {
-    return 'skipped-partial-stage';
-  }
-
-  const absolutePath = join(cwd, linkedSection.filePath);
-  const currentMarkdown = await readFile(absolutePath, 'utf8');
-  const freshSection = parseMarkdownSections(currentMarkdown, linkedSection.filePath).find(
-    (section) => section.id === sectionId,
-  );
-  if (!freshSection) return 'skipped-not-found';
-
-  await applySectionCorrection(absolutePath, freshSection, correctedContent);
-  await stageFile(cwd, linkedSection.filePath);
-  return 'applied';
 }
 
 async function runCheck(options: CheckOptions): Promise<number> {
@@ -138,7 +103,12 @@ async function runCheck(options: CheckOptions): Promise<number> {
     }
 
     if (result.correction.mode === 'auto-fix' && result.validation?.valid) {
-      const outcome = await applyAutoFix(options.cwd, graph, result.sectionId, result.correction.correctedContent);
+      const outcome = await applyCorrectionToRepo(
+        options.cwd,
+        graph,
+        result.sectionId,
+        result.correction.correctedContent,
+      );
       if (outcome === 'applied') {
         autoFixed += 1;
         console.log(`seal: auto-fixed "${result.sectionId}"`);

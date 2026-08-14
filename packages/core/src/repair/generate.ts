@@ -49,8 +49,12 @@ function parseGenerationResponse(raw: string): GenerationResponse {
   };
 }
 
-function resolveMode(correctedContent: string, confidence: number): { mode: CorrectionMode; content: string } {
-  if (confidence >= AUTO_FIX_THRESHOLD) {
+function resolveMode(
+  correctedContent: string,
+  confidence: number,
+  threshold: number,
+): { mode: CorrectionMode; content: string } {
+  if (confidence >= threshold) {
     return { mode: 'auto-fix', content: correctedContent };
   }
   const content = correctedContent.startsWith(LOW_CONFIDENCE_MARKER)
@@ -59,17 +63,26 @@ function resolveMode(correctedContent: string, confidence: number): { mode: Corr
   return { mode: 'review-needed', content };
 }
 
+export interface GenerateCorrectionOptions {
+  confidenceThreshold?: number;
+}
+
 export async function generateCorrection(
   suspect: Suspect,
   verdict: StalenessVerdict,
   llm: LLMClient,
+  options: GenerateCorrectionOptions = {},
 ): Promise<Correction> {
   const raw = await llm.complete(buildPrompt(suspect, verdict), {
     systemInstruction: SYSTEM_INSTRUCTION,
     temperature: 0.2,
   });
   const { correctedContent, confidence, rationale } = parseGenerationResponse(raw);
-  const { mode, content } = resolveMode(correctedContent, confidence);
+  const { mode, content } = resolveMode(
+    correctedContent,
+    confidence,
+    options.confidenceThreshold ?? AUTO_FIX_THRESHOLD,
+  );
 
   return {
     sectionId: suspect.section.id,

@@ -26,9 +26,13 @@ export {
 
 export type { ChangedFile, ChangedFileStatus } from './git/index.js';
 export {
+  commit,
+  configureGitIdentity,
+  createBranch,
   getDiffBetweenRefs,
   getStagedDiff,
   hasUnstagedChanges,
+  push,
   readFileAtRef,
   readStagedFile,
   readWorkingTreeFile,
@@ -59,5 +63,18 @@ export {
   verifyStalenessForAll,
 } from './changes/index.js';
 
-export type { Correction, CorrectionMode, RepairResult, ValidationResult } from './repair/index.js';
-export { generateCorrection, repairSection, repairStaleDocs, validateCorrection } from './repair/index.js';
+export type {
+  ApplyCorrectionOutcome,
+  Correction,
+  CorrectionMode,
+  GenerateCorrectionOptions,
+  RepairResult,
+  ValidationResult,
+} from './repair/index.js';
+export {
+  applyCorrectionToRepo,
+  generateCorrection,
+  repairSection,
+  repairStaleDocs,
+  validateCorrection,
+} from './repair/index.js';

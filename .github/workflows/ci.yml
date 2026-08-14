@@ -19,3 +19,9 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run build
+      - name: Verify committed action bundle is up to date
+        run: |
+          if ! git diff --exit-code -- packages/action/dist; then
+            echo "::error::packages/action/dist is out of date - run 'npm run build -w @seal/action' and commit the result."
+            exit 1
+          fi

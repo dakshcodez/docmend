@@ -26,6 +26,7 @@ export {
 
 export type { ChangedFile, ChangedFileStatus } from './git/index.js';
 export {
+  checkoutRef,
   commit,
   configureGitIdentity,
   createBranch,

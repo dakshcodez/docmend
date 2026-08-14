@@ -15,6 +15,11 @@ export async function createBranch(cwd: string, branchName: string, fromRef: str
   await execFileAsync('git', ['checkout', '-b', branchName, fromRef], { cwd });
 }
 
+export async function checkoutRef(cwd: string, ref: string): Promise<void> {
+  assertSafeGitRef(ref, 'ref');
+  await execFileAsync('git', ['checkout', ref], { cwd });
+}
+
 export async function commit(cwd: string, message: string): Promise<void> {
   await execFileAsync('git', ['commit', '-m', message], { cwd });
 }

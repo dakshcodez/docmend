@@ -1,6 +1,6 @@
 import type { GitHub } from '@actions/github/lib/utils';
 import type { LinkGraph, RepairResult } from '@seal/core';
-import { applyCorrectionToRepo, commit, configureGitIdentity, createBranch, push } from '@seal/core';
+import { applyCorrectionToRepo, checkoutRef, commit, configureGitIdentity, createBranch, push } from '@seal/core';
 import type { PrContext } from './pr-context.js';
 
 const BOT_NAME = 'github-actions[bot]';
@@ -11,6 +11,7 @@ export interface FixPrResult {
   prNumber: number;
   prUrl: string;
   appliedSectionIds: string[];
+  mergeError?: string;
 }
 
 export async function createFixPr(
@@ -40,7 +41,14 @@ export async function createFixPr(
     }
   }
 
-  if (appliedSectionIds.length === 0) return null;
+  if (appliedSectionIds.length === 0) {
+    // Nothing was actually applied - leave the working tree back where
+    // actions/checkout put it, rather than stranded on an empty branch with
+    // a mutated git identity, since a later workflow step might depend on
+    // being on the original ref.
+    await checkoutRef(cwd, ctx.headSha);
+    return null;
+  }
 
   await commit(cwd, 'docs: auto-fix stale documentation via seal');
   await push(cwd, branchName);
@@ -60,9 +68,23 @@ export async function createFixPr(
     body,
   });
 
+  const result: FixPrResult = {
+    branchName,
+    prNumber: fixPr.number,
+    prUrl: fixPr.html_url,
+    appliedSectionIds,
+  };
+
   if (autoMerge) {
-    await octokit.rest.pulls.merge({ owner: ctx.owner, repo: ctx.repo, pull_number: fixPr.number });
+    // The fix PR was already created successfully at this point, so a merge
+    // failure (checks not run yet, branch protection, disallowed merge
+    // method) shouldn't discard that - it's reported on the result instead.
+    try {
+      await octokit.rest.pulls.merge({ owner: ctx.owner, repo: ctx.repo, pull_number: fixPr.number });
+    } catch (error) {
+      result.mergeError = error instanceof Error ? error.message : String(error);
+    }
   }
 
-  return { branchName, prNumber: fixPr.number, prUrl: fixPr.html_url, appliedSectionIds };
+  return result;
 }

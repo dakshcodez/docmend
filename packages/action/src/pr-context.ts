@@ -10,6 +10,17 @@ export interface PrContext {
 }
 
 export function loadPrContext(): PrContext {
+  // pull_request_target carries the same payload shape but runs with the
+  // base repo's privileged token against an untrusted head - this action's
+  // whole design (checking out and diffing the head SHA, then pushing and
+  // opening a PR) assumes standard pull_request trust semantics.
+  if (context.eventName !== 'pull_request') {
+    throw new Error(
+      `seal action must be triggered by a "pull_request" event, got "${context.eventName}". ` +
+        'Using "pull_request_target" here would run untrusted PR content with this repo\'s privileged token.',
+    );
+  }
+
   const pr = context.payload.pull_request as
     | { number: number; base?: { sha?: unknown; ref?: unknown }; head?: { sha?: unknown; ref?: unknown } }
     | undefined;

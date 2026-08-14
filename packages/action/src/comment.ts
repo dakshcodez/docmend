@@ -8,6 +8,7 @@ export interface CommentSummary {
   reviewNeeded: RepairResult[];
   failed: RepairResult[];
   fixPr: FixPrResult | null;
+  fixPrError?: string;
 }
 
 export async function postSummaryComment(
@@ -30,6 +31,14 @@ export async function postSummaryComment(
   }
 
   const lines = ['## Doc Check Results', '', `${parts.join(', ')}.`];
+
+  if (summary.fixPrError) {
+    lines.push('', `Could not open the auto-fix PR: ${summary.fixPrError}`);
+  }
+
+  if (summary.fixPr?.mergeError) {
+    lines.push('', `Auto-merge of #${summary.fixPr.prNumber} failed: ${summary.fixPr.mergeError}`);
+  }
 
   if (summary.reviewNeeded.length > 0) {
     lines.push('', '### Needs human review');

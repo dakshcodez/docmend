@@ -76,9 +76,20 @@ async function run(): Promise<void> {
   );
   const failed = repairResults.filter((result) => !result.correction);
 
-  const fixPr = await createFixPr(cwd, octokit, graph, ctx, autoFixResults, config.autoMerge);
+  // A failure creating the fix PR (fork PRs get a read-only GITHUB_TOKEN,
+  // push can fail, branch protection can reject the PR) shouldn't discard
+  // the staleness report that already succeeded - it's surfaced in the
+  // summary comment instead of failing the whole run.
+  let fixPr = null;
+  let fixPrError: string | undefined;
+  try {
+    fixPr = await createFixPr(cwd, octokit, graph, ctx, autoFixResults, config.autoMerge);
+  } catch (error) {
+    fixPrError = error instanceof Error ? error.message : String(error);
+    core.warning(`seal: could not open the auto-fix PR - ${fixPrError}`);
+  }
 
-  await postSummaryComment(octokit, ctx, { verdicts, reviewNeeded, failed, fixPr });
+  await postSummaryComment(octokit, ctx, { verdicts, reviewNeeded, failed, fixPr, fixPrError });
 
   core.info('seal: doc check complete.');
 }

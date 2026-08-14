@@ -1,5 +1,6 @@
 import type { DocSection } from '../docs/index.js';
 import type { CodeChunk } from '../parsing/index.js';
+import { compositeKey } from '../shared/composite-key.js';
 import type { Link } from './types.js';
 
 function normalizeReference(reference: string): string {
@@ -40,7 +41,7 @@ export function buildHeuristicLinks(chunks: CodeChunk[], sections: DocSection[])
       if (!matchedChunks) continue;
 
       for (const chunk of matchedChunks) {
-        const key = `${chunk.id}|${section.id}`;
+        const key = compositeKey(chunk.id, section.id);
         if (seen.has(key)) continue;
         seen.add(key);
         links.push({ chunkId: chunk.id, sectionId: section.id, method: 'heuristic', score: 1 });

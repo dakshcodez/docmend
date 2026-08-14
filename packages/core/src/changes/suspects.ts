@@ -1,4 +1,5 @@
 import type { LinkGraph } from '../linkgraph/index.js';
+import { compositeKey } from '../shared/composite-key.js';
 import type { ChunkDiff, Suspect } from './types.js';
 
 export function findSuspectSections(meaningfulDiffs: ChunkDiff[], graph: LinkGraph): Suspect[] {
@@ -13,7 +14,7 @@ export function findSuspectSections(meaningfulDiffs: ChunkDiff[], graph: LinkGra
       const section = sectionsById.get(link.sectionId);
       if (!section) continue;
 
-      const key = `${diff.chunkId}|${section.id}`;
+      const key = compositeKey(diff.chunkId, section.id);
       if (seen.has(key)) continue;
       seen.add(key);
 

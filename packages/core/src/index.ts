@@ -1,7 +1,7 @@
 export const CORE_VERSION = '0.1.0';
 
 export type { CompleteOptions, LLMClient, GeminiClientOptions } from './llm/index.js';
-export { GeminiClient } from './llm/index.js';
+export { GeminiClient, parseJsonResponse } from './llm/index.js';
 
 export type { ChunkKind, CodeChunk, GrammarId, SourceFile, SupportedLanguage } from './parsing/index.js';
 export { extractChunksFromSource, parseCodebase, walkSourceFiles } from './parsing/index.js';
@@ -42,3 +42,6 @@ export {
   verifyStaleness,
   verifyStalenessForAll,
 } from './changes/index.js';
+
+export type { Correction, CorrectionMode, RepairResult, ValidationResult } from './repair/index.js';
+export { generateCorrection, repairSection, repairStaleDocs, validateCorrection } from './repair/index.js';

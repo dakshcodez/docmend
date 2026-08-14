@@ -1,4 +1,5 @@
 export type { DocSection } from './types.js';
+export { applySectionCorrection } from './apply-correction.js';
 export { extractCodeReferences } from './code-references.js';
 export { parseMarkdownSections } from './markdown-parser.js';
 export { parseDocs } from './parser.js';

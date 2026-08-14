@@ -7,7 +7,13 @@ export type { ChunkKind, CodeChunk, GrammarId, SourceFile, SupportedLanguage } f
 export { extractChunksFromSource, parseCodebase, walkSourceFiles } from './parsing/index.js';
 
 export type { DocFile, DocSection } from './docs/index.js';
-export { extractCodeReferences, parseDocs, parseMarkdownSections, walkDocFiles } from './docs/index.js';
+export {
+  applySectionCorrection,
+  extractCodeReferences,
+  parseDocs,
+  parseMarkdownSections,
+  walkDocFiles,
+} from './docs/index.js';
 
 export type { BuildLinkGraphOptions, EmbeddingLinkOptions, Link, LinkGraph, LinkMethod } from './linkgraph/index.js';
 export {
@@ -19,7 +25,17 @@ export {
 } from './linkgraph/index.js';
 
 export type { ChangedFile, ChangedFileStatus } from './git/index.js';
-export { getDiffBetweenRefs, getStagedDiff, readFileAtRef, readStagedFile, readWorkingTreeFile } from './git/index.js';
+export {
+  getDiffBetweenRefs,
+  getStagedDiff,
+  hasUnstagedChanges,
+  readFileAtRef,
+  readStagedFile,
+  readWorkingTreeFile,
+  stageFile,
+} from './git/index.js';
+
+export { isIgnored, loadIgnorePatterns } from './config/index.js';
 
 export type {
   ChunkChangeType,

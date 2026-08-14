@@ -1,4 +1,5 @@
 import type { LLMClient } from '../llm/index.js';
+import { parseJsonResponse } from '../llm/index.js';
 import type { StalenessVerdict, Suspect } from './types.js';
 
 const SYSTEM_INSTRUCTION = `You are a technical documentation auditor. Given a code change and a documentation section that references the changed code, determine whether the documentation is still accurate.
@@ -19,12 +20,7 @@ function buildPrompt(suspect: Suspect): string {
 }
 
 function parseVerdict(raw: string): { stale: boolean; explanation: string } {
-  const trimmed = raw
-    .trim()
-    .replace(/^```(?:json)?\s*/i, '')
-    .replace(/```\s*$/i, '');
-
-  const parsed = JSON.parse(trimmed) as { stale: unknown; explanation: unknown };
+  const parsed = parseJsonResponse<{ stale: unknown; explanation: unknown }>(raw);
   if (typeof parsed.stale !== 'boolean' || typeof parsed.explanation !== 'string') {
     throw new Error('LLM staleness response missing required fields');
   }

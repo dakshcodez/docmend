@@ -1,8 +1,10 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { assertSafeGitRef } from './safety.js';
 import type { ChangedFile } from './types.js';
 
 const execFileAsync = promisify(execFile);
+const MAX_BUFFER_BYTES = 10 * 1024 * 1024;
 
 function parseNameStatus(output: string): ChangedFile[] {
   const files: ChangedFile[] = [];
@@ -29,11 +31,19 @@ export async function getDiffBetweenRefs(
   baseRef: string,
   headRef: string,
 ): Promise<ChangedFile[]> {
-  const { stdout } = await execFileAsync('git', ['diff', '--name-status', baseRef, headRef], { cwd });
+  assertSafeGitRef(baseRef, 'baseRef');
+  assertSafeGitRef(headRef, 'headRef');
+  const { stdout } = await execFileAsync('git', ['diff', '--name-status', baseRef, headRef], {
+    cwd,
+    maxBuffer: MAX_BUFFER_BYTES,
+  });
   return parseNameStatus(stdout);
 }
 
 export async function getStagedDiff(cwd: string): Promise<ChangedFile[]> {
-  const { stdout } = await execFileAsync('git', ['diff', '--name-status', '--staged'], { cwd });
+  const { stdout } = await execFileAsync('git', ['diff', '--name-status', '--staged'], {
+    cwd,
+    maxBuffer: MAX_BUFFER_BYTES,
+  });
   return parseNameStatus(stdout);
 }

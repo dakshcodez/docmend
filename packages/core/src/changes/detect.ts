@@ -21,7 +21,7 @@ export interface DetectChangesResult {
 
 export async function detectChanges(options: DetectChangesOptions): Promise<DetectChangesResult> {
   const chunkDiffs = await diffChunks(options.fileChanges);
-  const meaningfulDiffs = filterMeaningfulChanges(chunkDiffs);
+  const meaningfulDiffs = await filterMeaningfulChanges(chunkDiffs);
   const suspects = findSuspectSections(meaningfulDiffs, options.linkGraph);
   const verdicts = await verifyStalenessForAll(suspects, options.llm);
 

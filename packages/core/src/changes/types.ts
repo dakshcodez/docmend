@@ -27,4 +27,5 @@ export interface StalenessVerdict {
   chunkId: string;
   stale: boolean;
   explanation: string;
+  error?: string;
 }

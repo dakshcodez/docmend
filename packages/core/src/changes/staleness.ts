@@ -46,7 +46,17 @@ export async function verifyStalenessForAll(
 ): Promise<StalenessVerdict[]> {
   const verdicts: StalenessVerdict[] = [];
   for (const suspect of suspects) {
-    verdicts.push(await verifyStaleness(suspect, llm));
+    try {
+      verdicts.push(await verifyStaleness(suspect, llm));
+    } catch (error) {
+      verdicts.push({
+        sectionId: suspect.section.id,
+        chunkId: suspect.chunkDiff.chunkId,
+        stale: true,
+        explanation: 'Automatic staleness verification failed; flagging for manual review.',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
   return verdicts;
 }

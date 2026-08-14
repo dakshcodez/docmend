@@ -11,6 +11,7 @@ export interface CodeChunk {
   kind: ChunkKind;
   name: string;
   signature: string;
+  body: string;
   docComment: string | null;
   startLine: number;
   endLine: number;

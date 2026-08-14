@@ -17,3 +17,28 @@ export {
   loadLinkGraph,
   saveLinkGraph,
 } from './linkgraph/index.js';
+
+export type { ChangedFile, ChangedFileStatus } from './git/index.js';
+export { getDiffBetweenRefs, getStagedDiff, readFileAtRef, readStagedFile, readWorkingTreeFile } from './git/index.js';
+
+export type {
+  ChunkChangeType,
+  ChunkDiff,
+  DetectChangesOptions,
+  DetectChangesResult,
+  FileChange,
+  StalenessVerdict,
+  Suspect,
+} from './changes/index.js';
+export {
+  detectChanges,
+  diffChunks,
+  diffFileChunks,
+  filterMeaningfulChanges,
+  findSuspectSections,
+  isMeaningfulChange,
+  isTestFile,
+  resolveFileChanges,
+  verifyStaleness,
+  verifyStalenessForAll,
+} from './changes/index.js';

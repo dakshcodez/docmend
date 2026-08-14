@@ -1,0 +1,60 @@
+import { LocalIndex } from 'vectra';
+import type { DocSection } from '../docs/index.js';
+import type { LLMClient } from '../llm/index.js';
+import type { CodeChunk } from '../parsing/index.js';
+import type { Link } from './types.js';
+
+export interface EmbeddingLinkOptions {
+  indexFolderPath: string;
+  similarityThreshold?: number;
+  topK?: number;
+}
+
+const DEFAULT_SIMILARITY_THRESHOLD = 0.75;
+const DEFAULT_TOP_K = 5;
+
+function chunkEmbeddingText(chunk: CodeChunk): string {
+  return [chunk.signature, chunk.docComment ?? ''].filter(Boolean).join('\n');
+}
+
+function sectionEmbeddingText(section: DocSection): string {
+  return [section.headingPath.join(' > '), section.content].filter(Boolean).join('\n');
+}
+
+export async function buildEmbeddingLinks(
+  chunks: CodeChunk[],
+  sections: DocSection[],
+  llm: LLMClient,
+  options: EmbeddingLinkOptions,
+): Promise<Link[]> {
+  const threshold = options.similarityThreshold ?? DEFAULT_SIMILARITY_THRESHOLD;
+  const topK = options.topK ?? DEFAULT_TOP_K;
+
+  const index = new LocalIndex(options.indexFolderPath);
+  if (await index.isIndexCreated()) {
+    await index.deleteIndex();
+  }
+  await index.createIndex({ version: 1 });
+
+  for (const chunk of chunks) {
+    const vector = await llm.embed(chunkEmbeddingText(chunk));
+    await index.insertItem({ id: chunk.id, vector });
+  }
+
+  const links: Link[] = [];
+  for (const section of sections) {
+    const vector = await llm.embed(sectionEmbeddingText(section));
+    const results = await index.queryItems(vector, '', topK);
+    for (const result of results) {
+      if (result.score < threshold) continue;
+      links.push({
+        chunkId: result.item.id,
+        sectionId: section.id,
+        method: 'embedding',
+        score: result.score,
+      });
+    }
+  }
+
+  return links;
+}

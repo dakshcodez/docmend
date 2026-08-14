@@ -111,6 +111,7 @@ export async function extractChunksFromSource(
       kind,
       name: nameNode.text,
       signature: extractSignature(container),
+      body: container.text,
       docComment: extractDocComment(declNode, container, grammar),
       startLine: container.startPosition.row + 1,
       endLine: container.endPosition.row + 1,

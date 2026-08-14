@@ -18,6 +18,10 @@ export interface SourceFile {
   grammar: GrammarId;
 }
 
+export function resolveGrammar(filePath: string): GrammarId | undefined {
+  return EXTENSION_TO_GRAMMAR[extname(filePath)];
+}
+
 export async function walkSourceFiles(rootDir: string): Promise<SourceFile[]> {
   const files = await walkFiles(rootDir, (name) => extname(name) in EXTENSION_TO_GRAMMAR);
   return files.map((file) => ({

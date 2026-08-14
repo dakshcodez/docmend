@@ -7,6 +7,7 @@ import {
   detectChanges,
   getDiffBetweenRefs,
   getStagedDiff,
+  hasUnstagedChanges,
   isIgnored,
   loadIgnorePatterns,
   loadLinkGraph,
@@ -25,6 +26,8 @@ export interface CheckOptions {
   llm?: LLMClient;
 }
 
+type AutoFixOutcome = 'applied' | 'skipped-not-found' | 'skipped-partial-stage';
+
 const LINK_GRAPH_PATH = ['.seal', 'link-graph.json'];
 
 function resolveApiKey(): string | undefined {
@@ -39,28 +42,36 @@ async function loadGraph(cwd: string): Promise<LinkGraph | null> {
   }
 }
 
-async function applyAutoFix(cwd: string, graph: LinkGraph, sectionId: string, correctedContent: string): Promise<boolean> {
+async function applyAutoFix(
+  cwd: string,
+  graph: LinkGraph,
+  sectionId: string,
+  correctedContent: string,
+): Promise<AutoFixOutcome> {
   const linkedSection = graph.sections.find((section) => section.id === sectionId);
-  if (!linkedSection) return false;
+  if (!linkedSection) return 'skipped-not-found';
+
+  // Writing the working-tree file and then `git add`-ing it stages the file's
+  // *entire* current content. If the file already had unstaged edits the
+  // developer deliberately hadn't staged, that would silently pull them into
+  // the commit too - so only auto-fix a file that's currently clean.
+  if (await hasUnstagedChanges(cwd, linkedSection.filePath)) {
+    return 'skipped-partial-stage';
+  }
 
   const absolutePath = join(cwd, linkedSection.filePath);
   const currentMarkdown = await readFile(absolutePath, 'utf8');
   const freshSection = parseMarkdownSections(currentMarkdown, linkedSection.filePath).find(
     (section) => section.id === sectionId,
   );
-  if (!freshSection) return false;
+  if (!freshSection) return 'skipped-not-found';
 
   await applySectionCorrection(absolutePath, freshSection, correctedContent);
   await stageFile(cwd, linkedSection.filePath);
-  return true;
+  return 'applied';
 }
 
-export async function check(options: CheckOptions): Promise<number> {
-  if (process.env.SEAL_SKIP) {
-    console.log('seal: SEAL_SKIP set, skipping doc check.');
-    return 0;
-  }
-
+async function runCheck(options: CheckOptions): Promise<number> {
   const apiKey = resolveApiKey();
   if (!options.llm && !apiKey) {
     const message =
@@ -127,13 +138,19 @@ export async function check(options: CheckOptions): Promise<number> {
     }
 
     if (result.correction.mode === 'auto-fix' && result.validation?.valid) {
-      const applied = await applyAutoFix(options.cwd, graph, result.sectionId, result.correction.correctedContent);
-      if (applied) {
+      const outcome = await applyAutoFix(options.cwd, graph, result.sectionId, result.correction.correctedContent);
+      if (outcome === 'applied') {
         autoFixed += 1;
         console.log(`seal: auto-fixed "${result.sectionId}"`);
         continue;
       }
-      console.warn(`seal: could not locate "${result.sectionId}" in its current file - flagging for review instead.`);
+      if (outcome === 'skipped-partial-stage') {
+        console.warn(
+          `seal: "${result.sectionId}" has unstaged changes in the same file - skipping auto-fix to avoid staging unintended changes. Needs manual review.`,
+        );
+      } else {
+        console.warn(`seal: could not locate "${result.sectionId}" in its current file - flagging for review instead.`);
+      }
     }
 
     needsReview += 1;
@@ -146,4 +163,23 @@ export async function check(options: CheckOptions): Promise<number> {
     return 1;
   }
   return 0;
+}
+
+export async function check(options: CheckOptions): Promise<number> {
+  if (process.env.SEAL_SKIP) {
+    console.log('seal: SEAL_SKIP set, skipping doc check.');
+    return 0;
+  }
+
+  try {
+    return await runCheck(options);
+  } catch (error) {
+    const message = `seal: doc check failed unexpectedly - ${error instanceof Error ? error.message : String(error)}`;
+    if (options.strict) {
+      console.error(message);
+      return 1;
+    }
+    console.warn(message);
+    return 0;
+  }
 }

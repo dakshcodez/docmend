@@ -28,6 +28,7 @@ export type { ChangedFile, ChangedFileStatus } from './git/index.js';
 export {
   getDiffBetweenRefs,
   getStagedDiff,
+  hasUnstagedChanges,
   readFileAtRef,
   readStagedFile,
   readWorkingTreeFile,

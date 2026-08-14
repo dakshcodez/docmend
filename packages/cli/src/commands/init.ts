@@ -11,7 +11,13 @@ async function fileExists(path: string): Promise<boolean> {
 }
 
 export async function init(cwd: string): Promise<number> {
-  const hooksDir = join(cwd, '.git', 'hooks');
+  const gitDir = join(cwd, '.git');
+  if (!(await fileExists(gitDir))) {
+    console.error(`seal: ${cwd} does not look like a git repository (no .git found).`);
+    return 1;
+  }
+
+  const hooksDir = join(gitDir, 'hooks');
   await mkdir(hooksDir, { recursive: true });
   const hookPath = join(hooksDir, 'pre-commit');
 

@@ -39,6 +39,9 @@ function parseGenerationResponse(raw: string): GenerationResponse {
   ) {
     throw new Error('LLM correction response missing required fields');
   }
+  if (!Number.isFinite(parsed.confidence) || parsed.confidence < 0 || parsed.confidence > 1) {
+    throw new Error(`LLM correction response has an out-of-range confidence: ${parsed.confidence}`);
+  }
   return {
     correctedContent: parsed.correctedContent,
     confidence: parsed.confidence,
@@ -50,7 +53,10 @@ function resolveMode(correctedContent: string, confidence: number): { mode: Corr
   if (confidence >= AUTO_FIX_THRESHOLD) {
     return { mode: 'auto-fix', content: correctedContent };
   }
-  return { mode: 'review-needed', content: `${LOW_CONFIDENCE_MARKER}${correctedContent}` };
+  const content = correctedContent.startsWith(LOW_CONFIDENCE_MARKER)
+    ? correctedContent
+    : `${LOW_CONFIDENCE_MARKER}${correctedContent}`;
+  return { mode: 'review-needed', content };
 }
 
 export async function generateCorrection(

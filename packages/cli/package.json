@@ -1,7 +1,7 @@
 {
   "name": "@seal/cli",
   "version": "0.1.0",
-  "description": "seal CLI - self-healing technical documentation as a local git hook",
+  "description": "seal CLI - automated documentation healing as a local git hook",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/dakshcodez/seal#readme",

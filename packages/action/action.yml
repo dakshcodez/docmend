@@ -1,4 +1,4 @@
-name: 'seal - Self-Healing Technical Documentation'
+name: 'seal - Automated Documentation Healing'
 description: 'Detects code changes that make documentation stale, auto-fixes high-confidence cases via a PR, and flags the rest for human review.'
 inputs:
   gemini-api-key:

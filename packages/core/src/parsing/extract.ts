@@ -40,11 +40,29 @@ function findEnclosingClassName(node: Node, classNodeType: string): string | nul
 }
 
 function getChunkContainer(declNode: Node): Node {
-  const parent = declNode.parent;
-  if (parent && parent.type === 'export_statement') {
-    return parent;
+  let container = declNode;
+
+  // `const foo = () => {}` captures the `variable_declarator`, but the
+  // declaration keyword (and any `export`) lives one or two levels up.
+  // Skip the widen when siblings share the statement (`const a = 1, b = () => {}`)
+  // - otherwise every declarator on the line would get an identical
+  // body/signature, causing false-positive staleness on unrelated siblings
+  // and indistinguishable embedding text.
+  const parent = container.parent;
+  if (
+    parent &&
+    (parent.type === 'lexical_declaration' || parent.type === 'variable_declaration') &&
+    parent.namedChildCount === 1
+  ) {
+    container = parent;
   }
-  return declNode;
+
+  const grandparent = container.parent;
+  if (grandparent && grandparent.type === 'export_statement') {
+    container = grandparent;
+  }
+
+  return container;
 }
 
 function extractSignature(container: Node): string {
@@ -97,7 +115,9 @@ export async function extractChunksFromSource(
     if (capture.name !== 'chunk') continue;
     const declNode = capture.node;
     const nameNode = declNode.childForFieldName('name');
-    if (!nameNode) continue;
+    // `variable_declarator`'s name field can be a destructuring pattern
+    // (`const { a, b } = () => {}`) - not a real declaration name, skip it.
+    if (!nameNode || nameNode.type !== 'identifier') continue;
 
     const kind = resolveKind(declNode, grammar);
     const className = kind === 'method' ? findEnclosingClassName(declNode, classNodeType) : null;

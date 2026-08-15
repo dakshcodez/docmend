@@ -1,0 +1,22 @@
+name: docmend
+
+on:
+  pull_request:
+    paths:
+      - 'packages/*/src/**'
+      - '**/*.md'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  docmend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need the PR's base commit available, not just the head
+      - uses: ./
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}

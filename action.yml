@@ -1,5 +1,5 @@
 name: 'docmend - Automated Documentation Healing'
-description: 'Detects code changes that make documentation stale, auto-fixes high-confidence cases via a PR, and flags the rest for human review.'
+description: 'Detects stale docs from code changes, auto-fixes high-confidence cases, and flags the rest for review.'
 inputs:
   gemini-api-key:
     description: 'Gemini API key used for staleness detection and doc repair.'

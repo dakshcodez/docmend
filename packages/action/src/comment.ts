@@ -11,6 +11,19 @@ export interface CommentSummary {
   fixPrError?: string;
 }
 
+export async function postStatusComment(
+  octokit: InstanceType<typeof GitHub>,
+  ctx: PrContext,
+  message: string,
+): Promise<void> {
+  await octokit.rest.issues.createComment({
+    owner: ctx.owner,
+    repo: ctx.repo,
+    issue_number: ctx.prNumber,
+    body: `## Doc Check Results\n\n${message}`,
+  });
+}
+
 export async function postSummaryComment(
   octokit: InstanceType<typeof GitHub>,
   ctx: PrContext,

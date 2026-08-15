@@ -14,10 +14,12 @@ import {
   repairStaleDocs,
   resolveFileChanges,
 } from '@docmend/core';
-import { postSummaryComment } from './comment.js';
+import { postStatusComment, postSummaryComment } from './comment.js';
 import { loadConfig } from './config.js';
 import { createFixPr } from './fix-pr.js';
 import { loadPrContext } from './pr-context.js';
+
+const SUPPORTED_LANGUAGES = 'TypeScript, TSX, JavaScript, and Python';
 
 async function run(): Promise<void> {
   const config = loadConfig();
@@ -27,8 +29,26 @@ async function run(): Promise<void> {
   const octokit = getOctokit(config.githubToken);
   const llm = new GeminiClient({ apiKey: config.apiKey });
 
-  core.info('docmend: building code-to-docs link graph...');
+  core.info('docmend: parsing codebase...');
   const chunks = await parseCodebase(cwd);
+
+  if (chunks.length === 0) {
+    // Checked before parseDocs/buildLinkGraph specifically to avoid burning
+    // an embed() call per doc section (buildEmbeddingLinks still embeds
+    // every section even with zero chunks to link against) on a run that's
+    // about to report there's nothing to do anyway.
+    core.info('docmend: no parseable code found in this repository.');
+    core.setOutput('stale-sections-found', 0);
+    core.setOutput('corrections-generated', 0);
+    await postStatusComment(
+      octokit,
+      ctx,
+      `No functions, classes, or methods were detected in this repository. docmend currently parses ${SUPPORTED_LANGUAGES}, but doesn't yet recognize every code pattern (e.g. arrow-function-only declarations) - this could mean an unsupported language, or supported code docmend doesn't fully cover yet. Nothing to check.`,
+    );
+    return;
+  }
+
+  core.info('docmend: building code-to-docs link graph...');
   const sections = await parseDocs(cwd);
   const graph = await buildLinkGraph(chunks, sections, {
     llm,
@@ -43,6 +63,7 @@ async function run(): Promise<void> {
     core.info('docmend: no relevant changes in this PR.');
     core.setOutput('stale-sections-found', 0);
     core.setOutput('corrections-generated', 0);
+    await postStatusComment(octokit, ctx, 'No relevant file changes in this PR. Nothing to check.');
     return;
   }
 
@@ -60,6 +81,11 @@ async function run(): Promise<void> {
   if (staleVerdicts.length === 0) {
     core.info('docmend: docs look accurate for this PR.');
     core.setOutput('corrections-generated', 0);
+    const message =
+      suspects.length === 0
+        ? 'None of the changed code in this PR is referenced by any documentation section (or is in a language/pattern docmend doesn\'t recognize yet). Nothing to check.'
+        : `${suspects.length} linked documentation section(s) checked - all still accurate, nothing to fix.`;
+    await postStatusComment(octokit, ctx, message);
     return;
   }
 

@@ -14,10 +14,12 @@ import {
   repairStaleDocs,
   resolveFileChanges,
 } from '@docmend/core';
-import { postSummaryComment } from './comment.js';
+import { postStatusComment, postSummaryComment } from './comment.js';
 import { loadConfig } from './config.js';
 import { createFixPr } from './fix-pr.js';
 import { loadPrContext } from './pr-context.js';
+
+const SUPPORTED_LANGUAGES = 'TypeScript, TSX, JavaScript, and Python';
 
 async function run(): Promise<void> {
   const config = loadConfig();
@@ -35,6 +37,18 @@ async function run(): Promise<void> {
     embeddingIndexPath: join(cwd, '.docmend', 'vectra-index'),
   });
 
+  if (chunks.length === 0) {
+    core.info('docmend: no parseable code found in this repository.');
+    core.setOutput('stale-sections-found', 0);
+    core.setOutput('corrections-generated', 0);
+    await postStatusComment(
+      octokit,
+      ctx,
+      `No parseable code found in this repository - docmend currently supports ${SUPPORTED_LANGUAGES}. Nothing to check.`,
+    );
+    return;
+  }
+
   const changedFiles = await getDiffBetweenRefs(cwd, ctx.baseSha, ctx.headSha);
   const ignorePatterns = await loadIgnorePatterns(cwd);
   const relevantFiles = changedFiles.filter((file) => !isIgnored(file.path, ignorePatterns));
@@ -43,6 +57,7 @@ async function run(): Promise<void> {
     core.info('docmend: no relevant changes in this PR.');
     core.setOutput('stale-sections-found', 0);
     core.setOutput('corrections-generated', 0);
+    await postStatusComment(octokit, ctx, 'No relevant file changes in this PR. Nothing to check.');
     return;
   }
 
@@ -60,6 +75,11 @@ async function run(): Promise<void> {
   if (staleVerdicts.length === 0) {
     core.info('docmend: docs look accurate for this PR.');
     core.setOutput('corrections-generated', 0);
+    const message =
+      suspects.length === 0
+        ? `None of the changed files in this PR are referenced by any documentation section (or none are in a supported language - docmend currently supports ${SUPPORTED_LANGUAGES}). Nothing to check.`
+        : `${suspects.length} linked documentation section(s) checked - all still accurate, nothing to fix.`;
+    await postStatusComment(octokit, ctx, message);
     return;
   }
 

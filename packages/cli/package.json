@@ -1,17 +1,17 @@
 {
-  "name": "@seal/cli",
+  "name": "@docmend/cli",
   "version": "0.1.0",
-  "description": "seal CLI - automated documentation healing as a local git hook",
+  "description": "docmend CLI - automated documentation healing as a local git hook",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://github.com/dakshcodez/seal#readme",
+  "homepage": "https://github.com/dakshcodez/docmend#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dakshcodez/seal.git",
+    "url": "git+https://github.com/dakshcodez/docmend.git",
     "directory": "packages/cli"
   },
   "bugs": {
-    "url": "https://github.com/dakshcodez/seal/issues"
+    "url": "https://github.com/dakshcodez/docmend/issues"
   },
   "keywords": [
     "documentation",
@@ -23,7 +23,7 @@
     "developer-tools"
   ],
   "bin": {
-    "seal": "dist/index.js"
+    "docmend": "dist/index.js"
   },
   "main": "dist/index.js",
   "files": [
@@ -34,7 +34,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@seal/core": "^0.1.0"
+    "@docmend/core": "^0.1.0"
   },
   "engines": {
     "node": ">=20"

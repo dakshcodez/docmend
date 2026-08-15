@@ -45,7 +45,7 @@ export async function buildEmbeddingLinks(
     // Still surfaced as a warning, since it means one of the two silently
     // becomes unlinkable rather than crashing loudly like insertItem did.
     if (seenChunkIds.has(chunk.id)) {
-      console.warn(`seal: duplicate chunk id "${chunk.id}" - only the last one is linkable in the embedding index.`);
+      console.warn(`docmend: duplicate chunk id "${chunk.id}" - only the last one is linkable in the embedding index.`);
     }
     seenChunkIds.add(chunk.id);
     await index.upsertItem({ id: chunk.id, vector });

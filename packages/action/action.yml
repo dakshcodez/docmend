@@ -1,4 +1,4 @@
-name: 'seal - Automated Documentation Healing'
+name: 'docmend - Automated Documentation Healing'
 description: 'Detects code changes that make documentation stale, auto-fixes high-confidence cases via a PR, and flags the rest for human review.'
 inputs:
   gemini-api-key:
@@ -13,7 +13,7 @@ inputs:
     required: false
     default: '0.8'
   auto-merge:
-    description: 'Automatically merge the auto-fix PR seal opens.'
+    description: 'Automatically merge the auto-fix PR docmend opens.'
     required: false
     default: 'false'
 outputs:

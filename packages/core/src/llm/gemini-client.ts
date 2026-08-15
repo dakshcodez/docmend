@@ -48,10 +48,10 @@ export class GeminiClient implements LLMClient {
   private readonly embeddingModel: string;
 
   constructor(options: GeminiClientOptions = {}) {
-    const apiKey = options.apiKey ?? process.env.SEAL_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY;
+    const apiKey = options.apiKey ?? process.env.DOCMEND_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error(
-        'Gemini API key not found. Set SEAL_GEMINI_API_KEY (or GEMINI_API_KEY), or pass apiKey explicitly.',
+        'Gemini API key not found. Set DOCMEND_GEMINI_API_KEY (or GEMINI_API_KEY), or pass apiKey explicitly.',
       );
     }
 

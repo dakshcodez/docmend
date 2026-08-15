@@ -1,6 +1,6 @@
 import { join } from 'node:path';
-import type { LLMClient } from '@seal/core';
-import { GeminiClient, buildLinkGraph, parseCodebase, parseDocs, saveLinkGraph } from '@seal/core';
+import type { LLMClient } from '@docmend/core';
+import { GeminiClient, buildLinkGraph, parseCodebase, parseDocs, saveLinkGraph } from '@docmend/core';
 
 export interface BuildIndexOptions {
   cwd: string;
@@ -10,7 +10,7 @@ export interface BuildIndexOptions {
 
 export async function buildIndex(options: BuildIndexOptions): Promise<number> {
   if (!options.llm && !options.apiKey) {
-    console.error('seal: no Gemini API key found. Set SEAL_GEMINI_API_KEY or GEMINI_API_KEY.');
+    console.error('docmend: no Gemini API key found. Set DOCMEND_GEMINI_API_KEY or GEMINI_API_KEY.');
     return 1;
   }
 
@@ -20,10 +20,10 @@ export async function buildIndex(options: BuildIndexOptions): Promise<number> {
 
   const graph = await buildLinkGraph(chunks, sections, {
     llm,
-    embeddingIndexPath: join(options.cwd, '.seal', 'vectra-index'),
+    embeddingIndexPath: join(options.cwd, '.docmend', 'vectra-index'),
   });
 
-  await saveLinkGraph(graph, join(options.cwd, '.seal', 'link-graph.json'));
-  console.log(`seal: indexed ${chunks.length} code chunks and ${sections.length} doc sections.`);
+  await saveLinkGraph(graph, join(options.cwd, '.docmend', 'link-graph.json'));
+  console.log(`docmend: indexed ${chunks.length} code chunks and ${sections.length} doc sections.`);
   return 0;
 }

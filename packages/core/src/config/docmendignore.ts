@@ -39,7 +39,7 @@ function globToRegExp(pattern: string): RegExp {
 export async function loadIgnorePatterns(rootDir: string): Promise<RegExp[]> {
   let raw: string;
   try {
-    raw = await readFile(join(rootDir, '.sealignore'), 'utf8');
+    raw = await readFile(join(rootDir, '.docmendignore'), 'utf8');
   } catch {
     return [];
   }

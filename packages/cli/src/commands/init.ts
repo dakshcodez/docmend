@@ -1,7 +1,7 @@
 import { access, chmod, constants, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const HOOK_SCRIPT = '#!/bin/sh\nnpx seal check\n';
+const HOOK_SCRIPT = '#!/bin/sh\nnpx docmend check\n';
 
 async function fileExists(path: string): Promise<boolean> {
   return access(path, constants.F_OK).then(
@@ -13,7 +13,7 @@ async function fileExists(path: string): Promise<boolean> {
 export async function init(cwd: string): Promise<number> {
   const gitDir = join(cwd, '.git');
   if (!(await fileExists(gitDir))) {
-    console.error(`seal: ${cwd} does not look like a git repository (no .git found).`);
+    console.error(`docmend: ${cwd} does not look like a git repository (no .git found).`);
     return 1;
   }
 
@@ -23,13 +23,13 @@ export async function init(cwd: string): Promise<number> {
 
   if (await fileExists(hookPath)) {
     console.error(
-      `seal: ${hookPath} already exists - not overwriting it. Add "npx seal check" to it manually instead.`,
+      `docmend: ${hookPath} already exists - not overwriting it. Add "npx docmend check" to it manually instead.`,
     );
     return 1;
   }
 
   await writeFile(hookPath, HOOK_SCRIPT, 'utf8');
   await chmod(hookPath, 0o755);
-  console.log(`seal: installed pre-commit hook at ${hookPath}`);
+  console.log(`docmend: installed pre-commit hook at ${hookPath}`);
   return 0;
 }

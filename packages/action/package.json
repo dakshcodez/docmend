@@ -1,8 +1,8 @@
 {
-  "name": "@seal/action",
+  "name": "@docmend/action",
   "version": "0.1.0",
   "private": true,
-  "description": "seal GitHub Action - automated documentation healing CI integration",
+  "description": "docmend GitHub Action - automated documentation healing CI integration",
   "type": "module",
   "main": "dist/index.js",
   "files": [
@@ -15,7 +15,7 @@
   "dependencies": {
     "@actions/core": "^3.0.1",
     "@actions/github": "^9.1.1",
-    "@seal/core": "*"
+    "@docmend/core": "*"
   },
   "engines": {
     "node": ">=20"

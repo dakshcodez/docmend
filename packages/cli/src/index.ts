@@ -19,7 +19,7 @@ async function main(): Promise<number> {
       return init(cwd);
 
     case 'index': {
-      const apiKey = process.env.SEAL_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY;
+      const apiKey = process.env.DOCMEND_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY;
       return buildIndex({ cwd, apiKey });
     }
 
@@ -43,6 +43,6 @@ main()
     process.exitCode = code;
   })
   .catch((error) => {
-    console.error('seal: unexpected error:', error instanceof Error ? error.message : error);
+    console.error('docmend: unexpected error:', error instanceof Error ? error.message : error);
     process.exitCode = 1;
   });

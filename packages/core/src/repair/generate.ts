@@ -4,7 +4,7 @@ import { parseJsonResponse } from '../llm/index.js';
 import type { Correction, CorrectionMode } from './types.js';
 
 const AUTO_FIX_THRESHOLD = 0.8;
-const LOW_CONFIDENCE_MARKER = '<!-- seal: low-confidence correction, please review before merging -->\n';
+const LOW_CONFIDENCE_MARKER = '<!-- docmend: low-confidence correction, please review before merging -->\n';
 
 const SYSTEM_INSTRUCTION = `You are a precise technical documentation editor. You will be given a documentation section, the new version of the code it describes, and a diagnosis of what is now inaccurate.
 Rewrite ONLY the parts of the section that are inaccurate given the new code. Preserve the original style, tone, structure, and any content that is still accurate - do not rewrite parts that don't need to change.

@@ -3,9 +3,9 @@ import { createRequire } from 'node:module';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Resolved from @seal/core's own location (not this script's) so it works
+// Resolved from @docmend/core's own location (not this script's) so it works
 // regardless of where npm happened to hoist these transitive dependencies.
-const coreEntry = fileURLToPath(import.meta.resolve('@seal/core'));
+const coreEntry = fileURLToPath(import.meta.resolve('@docmend/core'));
 const coreRequire = createRequire(coreEntry);
 
 const wasmFiles = [

@@ -5,7 +5,7 @@ dist/
 .env.local
 .DS_Store
 
-# @seal/action ships as a GitHub Action, consumed directly from git with
+# @docmend/action ships as a GitHub Action, consumed directly from git with
 # no install/build step, so its bundled entry point must be committed.
 !packages/action/dist/
 !packages/action/dist/**

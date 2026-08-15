@@ -1,1 +1,1 @@
-export { isIgnored, loadIgnorePatterns } from './sealignore.js';
+export { isIgnored, loadIgnorePatterns } from './docmendignore.js';

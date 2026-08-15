@@ -13,7 +13,7 @@ import {
   readFileAtRef,
   repairStaleDocs,
   resolveFileChanges,
-} from '@seal/core';
+} from '@docmend/core';
 import { postSummaryComment } from './comment.js';
 import { loadConfig } from './config.js';
 import { createFixPr } from './fix-pr.js';
@@ -27,12 +27,12 @@ async function run(): Promise<void> {
   const octokit = getOctokit(config.githubToken);
   const llm = new GeminiClient({ apiKey: config.apiKey });
 
-  core.info('seal: building code-to-docs link graph...');
+  core.info('docmend: building code-to-docs link graph...');
   const chunks = await parseCodebase(cwd);
   const sections = await parseDocs(cwd);
   const graph = await buildLinkGraph(chunks, sections, {
     llm,
-    embeddingIndexPath: join(cwd, '.seal', 'vectra-index'),
+    embeddingIndexPath: join(cwd, '.docmend', 'vectra-index'),
   });
 
   const changedFiles = await getDiffBetweenRefs(cwd, ctx.baseSha, ctx.headSha);
@@ -40,7 +40,7 @@ async function run(): Promise<void> {
   const relevantFiles = changedFiles.filter((file) => !isIgnored(file.path, ignorePatterns));
 
   if (relevantFiles.length === 0) {
-    core.info('seal: no relevant changes in this PR.');
+    core.info('docmend: no relevant changes in this PR.');
     core.setOutput('stale-sections-found', 0);
     core.setOutput('corrections-generated', 0);
     return;
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   core.setOutput('stale-sections-found', staleVerdicts.length);
 
   if (staleVerdicts.length === 0) {
-    core.info('seal: docs look accurate for this PR.');
+    core.info('docmend: docs look accurate for this PR.');
     core.setOutput('corrections-generated', 0);
     return;
   }
@@ -86,12 +86,12 @@ async function run(): Promise<void> {
     fixPr = await createFixPr(cwd, octokit, graph, ctx, autoFixResults, config.autoMerge);
   } catch (error) {
     fixPrError = error instanceof Error ? error.message : String(error);
-    core.warning(`seal: could not open the auto-fix PR - ${fixPrError}`);
+    core.warning(`docmend: could not open the auto-fix PR - ${fixPrError}`);
   }
 
   await postSummaryComment(octokit, ctx, { verdicts, reviewNeeded, failed, fixPr, fixPrError });
 
-  core.info('seal: doc check complete.');
+  core.info('docmend: doc check complete.');
 }
 
 run().catch((error: unknown) => {

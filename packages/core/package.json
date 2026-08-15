@@ -1,17 +1,17 @@
 {
-  "name": "@seal/core",
+  "name": "@docmend/core",
   "version": "0.1.0",
-  "description": "Shared core logic for seal: code/doc parsing, link graph, staleness detection, doc repair engine",
+  "description": "Shared core logic for docmend: code/doc parsing, link graph, staleness detection, doc repair engine",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://github.com/dakshcodez/seal#readme",
+  "homepage": "https://github.com/dakshcodez/docmend#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dakshcodez/seal.git",
+    "url": "git+https://github.com/dakshcodez/docmend.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/dakshcodez/seal/issues"
+    "url": "https://github.com/dakshcodez/docmend/issues"
   },
   "keywords": [
     "documentation",

@@ -1,5 +1,5 @@
 import type { GitHub } from '@actions/github/lib/utils';
-import type { RepairResult, StalenessVerdict } from '@seal/core';
+import type { RepairResult, StalenessVerdict } from '@docmend/core';
 import type { FixPrResult } from './fix-pr.js';
 import type { PrContext } from './pr-context.js';
 

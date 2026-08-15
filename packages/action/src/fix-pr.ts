@@ -1,6 +1,6 @@
 import type { GitHub } from '@actions/github/lib/utils';
-import type { LinkGraph, RepairResult } from '@seal/core';
-import { applyCorrectionToRepo, checkoutRef, commit, configureGitIdentity, createBranch, push } from '@seal/core';
+import type { LinkGraph, RepairResult } from '@docmend/core';
+import { applyCorrectionToRepo, checkoutRef, commit, configureGitIdentity, createBranch, push } from '@docmend/core';
 import type { PrContext } from './pr-context.js';
 
 const BOT_NAME = 'github-actions[bot]';
@@ -24,7 +24,7 @@ export async function createFixPr(
 ): Promise<FixPrResult | null> {
   if (autoFixResults.length === 0) return null;
 
-  const branchName = `seal/doc-fixes-${Date.now()}`;
+  const branchName = `docmend/doc-fixes-${Date.now()}`;
   await configureGitIdentity(cwd, BOT_NAME, BOT_EMAIL);
   // actions/checkout leaves a pull_request event in detached HEAD at the PR
   // head SHA - the branch name itself usually isn't available as a local
@@ -50,11 +50,11 @@ export async function createFixPr(
     return null;
   }
 
-  await commit(cwd, 'docs: auto-fix stale documentation via seal');
+  await commit(cwd, 'docs: auto-fix stale documentation via docmend');
   await push(cwd, branchName);
 
   const body = [
-    'Automated documentation fixes from seal for this PR.',
+    'Automated documentation fixes from docmend for this PR.',
     '',
     ...appliedSectionIds.map((id) => `- \`${id}\``),
   ].join('\n');

@@ -1,8 +1,8 @@
-# seal
+# docmend
 
-**Automated documentation healing.** seal watches your codebase, detects when a code change makes your docs inaccurate, and either fixes the stale section automatically or flags it for human review — as a local git hook, a GitHub Action, or both.
+**Automated documentation healing.** docmend watches your codebase, detects when a code change makes your docs inaccurate, and either fixes the stale section automatically or flags it for human review — as a local git hook, a GitHub Action, or both.
 
-Every team's docs drift out of sync with the code. seal closes that gap automatically, using an LLM to understand *what* changed and whether it actually invalidates what's written about it — not just that a file touched a function that happens to be mentioned somewhere.
+Every team's docs drift out of sync with the code. docmend closes that gap automatically, using an LLM to understand *what* changed and whether it actually invalidates what's written about it — not just that a file touched a function that happens to be mentioned somewhere.
 
 ## How it works
 
@@ -13,25 +13,25 @@ Every team's docs drift out of sync with the code. seal closes that gap automati
 
 ## Installing
 
-### As a local git hook (`@seal/cli`)
+### As a local git hook (`@docmend/cli`)
 
 ```console
-$ npm install --save-dev @seal/cli
-$ npx seal init      # installs a pre-commit hook
-$ SEAL_GEMINI_API_KEY=... npx seal index   # one-time: build the code-to-docs graph
+$ npm install --save-dev @docmend/cli
+$ npx docmend init      # installs a pre-commit hook
+$ DOCMEND_GEMINI_API_KEY=... npx docmend index   # one-time: build the code-to-docs graph
 ```
 
-From then on, `seal check` runs automatically on every commit: it diffs your staged changes, checks any linked docs for staleness, and — for high-confidence fixes — rewrites the doc and re-stages it alongside your change. Anything uncertain is reported, never silently applied.
+From then on, `docmend check` runs automatically on every commit: it diffs your staged changes, checks any linked docs for staleness, and — for high-confidence fixes — rewrites the doc and re-stages it alongside your change. Anything uncertain is reported, never silently applied.
 
 - Non-blocking by default. Pass `--strict` to block the commit when something needs review.
-- `SEAL_SKIP=1 git commit ...` bypasses the check entirely.
-- Re-run `seal index` after significant changes to refresh the cached graph (it's read fresh; nothing rebuilds automatically on every commit — that's what keeps the hook fast).
-- `.sealignore` (gitignore-style syntax) excludes paths from the *changed-file* check.
+- `DOCMEND_SKIP=1 git commit ...` bypasses the check entirely.
+- Re-run `docmend index` after significant changes to refresh the cached graph (it's read fresh; nothing rebuilds automatically on every commit — that's what keeps the hook fast).
+- `.docmendignore` (gitignore-style syntax) excludes paths from the *changed-file* check.
 
-### As a GitHub Action (`@seal/action`)
+### As a GitHub Action (`@docmend/action`)
 
 ```yaml
-# .github/workflows/seal.yml
+# .github/workflows/docmend.yml
 on:
   pull_request:
 
@@ -40,13 +40,13 @@ permissions:
   pull-requests: write
 
 jobs:
-  seal:
+  docmend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # need the PR's base commit available, not just the head
-      - uses: dakshcodez/seal@v1
+      - uses: dakshcodez/docmend@v1
         with:
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           # confidence-threshold: '0.8'   # optional, default shown
@@ -57,7 +57,7 @@ On every PR, the Action diffs the base against the head commit, and for validate
 
 ## Configuration
 
-Both the CLI and the Action read the same underlying pipeline. The CLI takes `SEAL_GEMINI_API_KEY` (or `GEMINI_API_KEY`) from the environment; the Action takes `gemini-api-key` as an input, matching the `action.yml` inputs (`confidence-threshold`, `auto-merge`, `github-token`).
+Both the CLI and the Action read the same underlying pipeline. The CLI takes `DOCMEND_GEMINI_API_KEY` (or `GEMINI_API_KEY`) from the environment; the Action takes `gemini-api-key` as an input, matching the `action.yml` inputs (`confidence-threshold`, `auto-merge`, `github-token`).
 
 ## Real-world accuracy
 
@@ -71,9 +71,9 @@ TypeScript throughout, npm workspaces monorepo. Gemini (`gemini-3.7-flash` / `ge
 
 ```
 packages/
-  core/    @seal/core   - shared pipeline: parsing, link graph, change detection, doc repair
-  cli/     @seal/cli    - npm package, the local git hook
-  action/  @seal/action - GitHub Action
+  core/    @docmend/core   - shared pipeline: parsing, link graph, change detection, doc repair
+  cli/     @docmend/cli    - npm package, the local git hook
+  action/  @docmend/action - GitHub Action
 ```
 
 ## License

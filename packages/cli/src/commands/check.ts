@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import type { LinkGraph, LLMClient } from '@seal/core';
+import type { LinkGraph, LLMClient } from '@docmend/core';
 import {
   GeminiClient,
   applyCorrectionToRepo,
@@ -13,7 +13,7 @@ import {
   readStagedFile,
   repairStaleDocs,
   resolveFileChanges,
-} from '@seal/core';
+} from '@docmend/core';
 
 export interface CheckOptions {
   cwd: string;
@@ -22,10 +22,10 @@ export interface CheckOptions {
   llm?: LLMClient;
 }
 
-const LINK_GRAPH_PATH = ['.seal', 'link-graph.json'];
+const LINK_GRAPH_PATH = ['.docmend', 'link-graph.json'];
 
 function resolveApiKey(): string | undefined {
-  return process.env.SEAL_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY;
+  return process.env.DOCMEND_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY;
 }
 
 async function loadGraph(cwd: string): Promise<LinkGraph | null> {
@@ -40,7 +40,7 @@ async function runCheck(options: CheckOptions): Promise<number> {
   const apiKey = resolveApiKey();
   if (!options.llm && !apiKey) {
     const message =
-      'seal: no Gemini API key found (set SEAL_GEMINI_API_KEY or GEMINI_API_KEY) - skipping doc check.';
+      'docmend: no Gemini API key found (set DOCMEND_GEMINI_API_KEY or GEMINI_API_KEY) - skipping doc check.';
     if (options.strict) {
       console.error(message);
       return 1;
@@ -51,7 +51,7 @@ async function runCheck(options: CheckOptions): Promise<number> {
 
   const graph = await loadGraph(options.cwd);
   if (!graph) {
-    console.warn('seal: no cached link graph found. Run "seal index" first - skipping doc check.');
+    console.warn('docmend: no cached link graph found. Run "docmend index" first - skipping doc check.');
     return 0;
   }
 
@@ -63,7 +63,7 @@ async function runCheck(options: CheckOptions): Promise<number> {
   const relevantFiles = changedFiles.filter((file) => !isIgnored(file.path, ignorePatterns));
 
   if (relevantFiles.length === 0) {
-    console.log('seal: no relevant changes, nothing to check.');
+    console.log('docmend: no relevant changes, nothing to check.');
     return 0;
   }
 
@@ -85,7 +85,7 @@ async function runCheck(options: CheckOptions): Promise<number> {
 
   const staleVerdicts = verdicts.filter((verdict) => verdict.stale);
   if (staleVerdicts.length === 0) {
-    console.log('seal: docs look accurate for these changes.');
+    console.log('docmend: docs look accurate for these changes.');
     return 0;
   }
 
@@ -98,7 +98,7 @@ async function runCheck(options: CheckOptions): Promise<number> {
   for (const result of repairResults) {
     if (!result.correction) {
       failed += 1;
-      console.error(`seal: could not repair "${result.sectionId}" - ${result.error}`);
+      console.error(`docmend: could not repair "${result.sectionId}" - ${result.error}`);
       continue;
     }
 
@@ -111,23 +111,23 @@ async function runCheck(options: CheckOptions): Promise<number> {
       );
       if (outcome === 'applied') {
         autoFixed += 1;
-        console.log(`seal: auto-fixed "${result.sectionId}"`);
+        console.log(`docmend: auto-fixed "${result.sectionId}"`);
         continue;
       }
       if (outcome === 'skipped-partial-stage') {
         console.warn(
-          `seal: "${result.sectionId}" has unstaged changes in the same file - skipping auto-fix to avoid staging unintended changes. Needs manual review.`,
+          `docmend: "${result.sectionId}" has unstaged changes in the same file - skipping auto-fix to avoid staging unintended changes. Needs manual review.`,
         );
       } else {
-        console.warn(`seal: could not locate "${result.sectionId}" in its current file - flagging for review instead.`);
+        console.warn(`docmend: could not locate "${result.sectionId}" in its current file - flagging for review instead.`);
       }
     }
 
     needsReview += 1;
-    console.log(`seal: "${result.sectionId}" needs manual review - ${result.correction.rationale}`);
+    console.log(`docmend: "${result.sectionId}" needs manual review - ${result.correction.rationale}`);
   }
 
-  console.log(`seal: ${autoFixed} auto-fixed, ${needsReview} need review, ${failed} failed.`);
+  console.log(`docmend: ${autoFixed} auto-fixed, ${needsReview} need review, ${failed} failed.`);
 
   if (options.strict && (needsReview > 0 || failed > 0)) {
     return 1;
@@ -136,15 +136,15 @@ async function runCheck(options: CheckOptions): Promise<number> {
 }
 
 export async function check(options: CheckOptions): Promise<number> {
-  if (process.env.SEAL_SKIP) {
-    console.log('seal: SEAL_SKIP set, skipping doc check.');
+  if (process.env.DOCMEND_SKIP) {
+    console.log('docmend: DOCMEND_SKIP set, skipping doc check.');
     return 0;
   }
 
   try {
     return await runCheck(options);
   } catch (error) {
-    const message = `seal: doc check failed unexpectedly - ${error instanceof Error ? error.message : String(error)}`;
+    const message = `docmend: doc check failed unexpectedly - ${error instanceof Error ? error.message : String(error)}`;
     if (options.strict) {
       console.error(message);
       return 1;

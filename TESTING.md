@@ -1,12 +1,12 @@
 # Real-world accuracy test
 
-This documents a real-world test of seal against a fork of [tj/commander.js](https://github.com/tj/commander.js) (a real, actively-maintained, well-documented JavaScript library — chosen over the originally-suggested FastAPI/Pydantic for its much smaller size, to keep the test's embedding-API cost and runtime tractable on a free-tier key).
+This documents a real-world test of docmend against a fork of [tj/commander.js](https://github.com/tj/commander.js) (a real, actively-maintained, well-documented JavaScript library — chosen over the originally-suggested FastAPI/Pydantic for its much smaller size, to keep the test's embedding-API cost and runtime tractable on a free-tier key).
 
 ## Methodology
 
 1. Forked `tj/commander.js` to `dakshcodez/commander.js` and cloned it locally.
-2. Ran `seal index` for real (live Gemini API, `gemini-3.7-flash`/`gemini-embedding-2` for indexing, `gemini-3.5-flash-lite` for the staleness/repair calls during this test session specifically to work around `3.7-flash`'s demand-driven `503`s — the shipped default remains `3.7-flash`). Indexed the full repo: **232 code chunks, 365 doc sections** (before the changelog-exclusion fix described below), producing 194 links (178 heuristic, 16 embedding).
-3. Made three deliberate, targeted code changes and staged them, then ran `seal check` for real against the live pipeline.
+2. Ran `docmend index` for real (live Gemini API, `gemini-3.7-flash`/`gemini-embedding-2` for indexing, `gemini-3.5-flash-lite` for the staleness/repair calls during this test session specifically to work around `3.7-flash`'s demand-driven `503`s — the shipped default remains `3.7-flash`). Indexed the full repo: **232 code chunks, 365 doc sections** (before the changelog-exclusion fix described below), producing 194 links (178 heuristic, 16 embedding).
+3. Made three deliberate, targeted code changes and staged them, then ran `docmend check` for real against the live pipeline.
 4. Inspected the actual generated corrections and verdicts against expectations.
 
 ## Deliberate test cases
@@ -31,6 +31,6 @@ Also observed, not fixed: the correction pass occasionally touched unrelated for
 ## Known limitations of this test
 
 - The changelog-exclusion fix (bug #3 above) is verified at the unit level (the file-matching pattern was tested directly against 7 real-world filename cases, all correct) but **not re-validated end-to-end against the live API** — the free tier's *daily* embedding quota (1000 requests/day) was exhausted while re-indexing to confirm it, and daily quotas don't reset within a session. A full end-to-end re-run is a natural follow-up once quota is available.
-- This test exercised the `@seal/cli` path (`seal index` + `seal check`) only, not the GitHub Action — the Action's `dist/index.js` isn't bundled for standalone execution yet (see the publish-phase task).
+- This test exercised the `@docmend/cli` path (`docmend index` + `docmend check`) only, not the GitHub Action — the Action's `dist/index.js` isn't bundled for standalone execution yet (see the publish-phase task).
 - One real repository, one language (JavaScript), a handful of deliberate cases — not a statistically rigorous accuracy benchmark, but real signal from real code and real docs rather than synthetic fixtures.
-- The new `isTestFile`/`isChangelogFile` exclusions are unconditional — there's no way to opt a specific file back in short of renaming it. `.sealignore` exists as a user-facing override mechanism, but it's currently only wired into `check.ts`'s changed-file filtering, not into the doc/code indexing walk itself (a pre-existing gap, not introduced by this fix). A team that genuinely wants a file named `HISTORY.md` treated as living documentation has no escape hatch today.
+- The new `isTestFile`/`isChangelogFile` exclusions are unconditional — there's no way to opt a specific file back in short of renaming it. `.docmendignore` exists as a user-facing override mechanism, but it's currently only wired into `check.ts`'s changed-file filtering, not into the doc/code indexing walk itself (a pre-existing gap, not introduced by this fix). A team that genuinely wants a file named `HISTORY.md` treated as living documentation has no escape hatch today.

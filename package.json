@@ -1,5 +1,5 @@
 {
-  "name": "seal",
+  "name": "docmend",
   "private": true,
   "version": "0.1.0",
   "description": "Automated documentation healing for your codebase",
@@ -11,8 +11,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "npm run build -w @seal/core && npm run build -w @seal/cli && npm run build -w @seal/action",
-    "typecheck": "npm run build -w @seal/core && npm run typecheck -w @seal/cli && npm run typecheck -w @seal/action",
+    "build": "npm run build -w @docmend/core && npm run build -w @docmend/cli && npm run build -w @docmend/action",
+    "typecheck": "npm run build -w @docmend/core && npm run typecheck -w @docmend/cli && npm run typecheck -w @docmend/action",
     "lint": "eslint ."
   },
   "devDependencies": {

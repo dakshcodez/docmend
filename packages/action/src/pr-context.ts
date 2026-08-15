@@ -16,7 +16,7 @@ export function loadPrContext(): PrContext {
   // opening a PR) assumes standard pull_request trust semantics.
   if (context.eventName !== 'pull_request') {
     throw new Error(
-      `seal action must be triggered by a "pull_request" event, got "${context.eventName}". ` +
+      `docmend action must be triggered by a "pull_request" event, got "${context.eventName}". ` +
         'Using "pull_request_target" here would run untrusted PR content with this repo\'s privileged token.',
     );
   }
@@ -26,7 +26,7 @@ export function loadPrContext(): PrContext {
     | undefined;
 
   if (!pr) {
-    throw new Error('seal action must be triggered by a pull_request event');
+    throw new Error('docmend action must be triggered by a pull_request event');
   }
 
   const baseSha = pr.base?.sha;

@@ -22,6 +22,6 @@ jobs:
       - name: Verify committed action bundle is up to date
         run: |
           if ! git diff --exit-code -- packages/action/dist; then
-            echo "::error::packages/action/dist is out of date - run 'npm run build -w @seal/action' and commit the result."
+            echo "::error::packages/action/dist is out of date - run 'npm run build -w @docmend/action' and commit the result."
             exit 1
           fi

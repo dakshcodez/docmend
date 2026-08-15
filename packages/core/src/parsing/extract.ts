@@ -40,11 +40,21 @@ function findEnclosingClassName(node: Node, classNodeType: string): string | nul
 }
 
 function getChunkContainer(declNode: Node): Node {
-  const parent = declNode.parent;
-  if (parent && parent.type === 'export_statement') {
-    return parent;
+  let container = declNode;
+
+  // `const foo = () => {}` captures the `variable_declarator`, but the
+  // declaration keyword (and any `export`) lives one or two levels up.
+  const parent = container.parent;
+  if (parent && (parent.type === 'lexical_declaration' || parent.type === 'variable_declaration')) {
+    container = parent;
   }
-  return declNode;
+
+  const grandparent = container.parent;
+  if (grandparent && grandparent.type === 'export_statement') {
+    container = grandparent;
+  }
+
+  return container;
 }
 
 function extractSignature(container: Node): string {

@@ -2,6 +2,8 @@ export const JS_FAMILY_QUERY = `
 (function_declaration) @chunk
 (class_declaration) @chunk
 (method_definition) @chunk
+(variable_declarator value: (arrow_function)) @chunk
+(variable_declarator value: (function_expression)) @chunk
 `;
 
 export const PYTHON_QUERY = `

@@ -1,6 +1,6 @@
 # seal
 
-**Self-healing technical documentation.** seal watches your codebase, detects when a code change makes your docs inaccurate, and either fixes the stale section automatically or flags it for human review — as a local git hook, a GitHub Action, or both.
+**Automated documentation healing.** seal watches your codebase, detects when a code change makes your docs inaccurate, and either fixes the stale section automatically or flags it for human review — as a local git hook, a GitHub Action, or both.
 
 Every team's docs drift out of sync with the code. seal closes that gap automatically, using an LLM to understand *what* changed and whether it actually invalidates what's written about it — not just that a file touched a function that happens to be mentioned somewhere.
 

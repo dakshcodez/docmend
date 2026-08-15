@@ -1,6 +1,6 @@
 # @seal/cli
 
-Self-healing technical documentation, as a local git hook. Detects when a code change makes your Markdown docs stale, auto-fixes high-confidence cases, and flags the rest for review — before you commit.
+Automated documentation healing, as a local git hook. Detects when a code change makes your Markdown docs stale, auto-fixes high-confidence cases, and flags the rest for review — before you commit.
 
 ## Install
 

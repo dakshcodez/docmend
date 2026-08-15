@@ -3,6 +3,23 @@
   "version": "0.1.0",
   "description": "Shared core logic for seal: code/doc parsing, link graph, staleness detection, doc repair engine",
   "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/dakshcodez/seal#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dakshcodez/seal.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/dakshcodez/seal/issues"
+  },
+  "keywords": [
+    "documentation",
+    "docs",
+    "llm",
+    "gemini",
+    "ai"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

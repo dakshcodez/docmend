@@ -21,6 +21,9 @@ outputs:
     description: 'Number of documentation sections found to be stale for this PR.'
   corrections-generated:
     description: 'Number of corrections generated (auto-fixed plus flagged for review).'
+branding:
+  icon: 'refresh-cw'
+  color: 'blue'
 runs:
   using: 'node20'
   main: 'dist/index.js'

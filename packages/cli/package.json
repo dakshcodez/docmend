@@ -3,6 +3,25 @@
   "version": "0.1.0",
   "description": "seal CLI - self-healing technical documentation as a local git hook",
   "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/dakshcodez/seal#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dakshcodez/seal.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/dakshcodez/seal/issues"
+  },
+  "keywords": [
+    "documentation",
+    "docs",
+    "git-hook",
+    "llm",
+    "gemini",
+    "ai",
+    "developer-tools"
+  ],
   "bin": {
     "seal": "dist/index.js"
   },
@@ -15,7 +34,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@seal/core": "*"
+    "@seal/core": "^0.1.0"
   },
   "engines": {
     "node": ">=20"
